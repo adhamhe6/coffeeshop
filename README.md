@@ -79,9 +79,10 @@ docker compose up --build       # storefront + admin: http://localhost:8080
 `docker compose exec backend python manage.py seed_demo --allow-production` loads demo data into a running stack.
 API docs: <http://localhost:8080/api/v1/docs/> · Django admin (secondary tool): `/django-admin/`.
 
-> **Verification status:** the Compose file validates (`docker compose config`), but there was no Docker daemon in the
-> environment this project was built in, so **the images were never built or run here**. Treat the first `docker compose up`
-> as the first real test of the container path; the same code path was exercised natively (below).
+> **Verification status:** `docker compose config` validates and **both images build in CI** (GitHub Actions, `docker` job).
+> There was no Docker daemon in the environment this project was developed in, so the *running* container stack
+> (`docker compose up`: entrypoint wait-for-database, migrations, nginx → gunicorn, workers) has **not been started or
+> exercised end to end**. Treat the first `docker compose up` as the first real test of that path; the same code runs natively (below).
 
 ### Local development (what was actually exercised)
 
@@ -162,7 +163,7 @@ Security review (14 findings, 9 fixed, rest accepted/config): [`docs/security.md
 
 ## Known limitations
 
-- Docker images not built here (no daemon); nginx config not syntax-checked (`nginx -t` unavailable).
+- The container stack was built in CI but never started; the nginx config has not been syntax-checked (`nginx -t` unavailable).
 - Stripe, SMTP delivery and a production TLS/proxy setup were not exercised. Emails in development go to the console (not delivered).
 - Checkout requires an account (guests can browse and build a cart). Existing customers must verify their email to receive order emails.
 - No real-time driver tracking (statuses only, by design); no loyalty points, gift cards or maps.
