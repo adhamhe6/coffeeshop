@@ -12,7 +12,10 @@ const outDir = process.argv[2] ?? '../docs/screenshots/release';
 const password = process.env.DEMO_PASSWORD ?? 'Lantern-demo-2026!';
 mkdirSync(outDir, { recursive: true });
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+const browser = await chromium.launch({
+  executablePath: '/opt/pw-browsers/chromium',
+  args: ['--no-sandbox'],
+});
 const errors = [];
 
 async function session(size, email) {
@@ -22,7 +25,10 @@ async function session(size, email) {
   page.on('pageerror', (e) => errors.push(`pageerror ${e.message}`));
   if (email) {
     await page.goto(base + '/login');
-    await page.getByRole('main').getByLabel(/^Email/).fill(email);
+    await page
+      .getByRole('main')
+      .getByLabel(/^Email/)
+      .fill(email);
     await page.getByLabel(/^Password/).fill(password);
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForURL((u) => !u.pathname.startsWith('/login'));
@@ -49,7 +55,10 @@ const desktop = { width: 1440, height: 900 };
 const mobile = { width: 390, height: 844 };
 
 // Storefront (anonymous + customer)
-for (const [label, size] of [['desktop', desktop], ['mobile', mobile]]) {
+for (const [label, size] of [
+  ['desktop', desktop],
+  ['mobile', mobile],
+]) {
   const { context, page } = await session(size, null);
   await shot(page, `store-home-${label}`, '/');
   await shot(page, `store-menu-${label}`, '/menu');
@@ -65,12 +74,31 @@ for (const [label, size] of [['desktop', desktop], ['mobile', mobile]]) {
 }
 // Staff roles (desktop)
 const staff = [
-  ['admin', 'admin@lantern.example', ['/admin', '/admin/orders', '/admin/products', '/admin/inventory', '/admin/reports', '/admin/payments', '/admin/coupons', '/admin/staff', '/admin/audit-log']],
+  [
+    'admin',
+    'admin@lantern.example',
+    [
+      '/admin',
+      '/admin/orders',
+      '/admin/products',
+      '/admin/inventory',
+      '/admin/reports',
+      '/admin/payments',
+      '/admin/coupons',
+      '/admin/staff',
+      '/admin/audit-log',
+    ],
+  ],
   ['branchmanager', 'branchmanager.downtown@lantern.example', ['/admin']],
 ];
 for (const [who, email, routes] of staff) {
   const { context, page } = await session(desktop, email);
-  for (const r of routes) await shot(page, `admin-${who}-${r.replace(/\//g, '-').replace(/^-admin-?/, '') || 'overview'}`, r);
+  for (const r of routes)
+    await shot(
+      page,
+      `admin-${who}-${r.replace(/\//g, '-').replace(/^-admin-?/, '') || 'overview'}`,
+      r,
+    );
   await context.close();
 }
 {
