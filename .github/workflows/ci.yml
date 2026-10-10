@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: coffee, POSTGRES_PASSWORD: coffee, POSTGRES_DB: coffee }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U coffee" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://coffee:coffee@127.0.0.1:5432/coffee
+      REDIS_URL: redis://127.0.0.1:6379/0
+      DJANGO_SETTINGS_MODULE: config.settings.test
+    defaults:
+      run: { working-directory: backend }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip, cache-dependency-path: backend/requirements-dev.txt }
+      - run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check . && ruff format --check .
+      - name: Migrations are in sync with models
+        run: python manage.py makemigrations --check --dry-run
+      - name: Clean-database migrate
+        run: DJANGO_SETTINGS_MODULE=config.settings.dev python manage.py migrate --noinput
+      - name: Production settings sanity (deploy check)
+        run: |
+          DJANGO_SETTINGS_MODULE=config.settings.prod DJANGO_SECRET_KEY=$(python -c "import secrets;print(secrets.token_urlsafe(64))") \
+          DJANGO_ALLOWED_HOSTS=example.com python manage.py check --deploy --fail-level WARNING
+      - name: OpenAPI schema validates
+        run: DJANGO_SETTINGS_MODULE=config.settings.dev python manage.py spectacular --file /tmp/schema.yml --validate --fail-on-warn
+      - name: Tests
+        run: pytest -n auto --create-db --cov=apps --cov-report=term-missing:skip-covered -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: frontend }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: coffee, POSTGRES_PASSWORD: coffee, POSTGRES_DB: coffee }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U coffee" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgres://coffee:coffee@127.0.0.1:5432/coffee
+      REDIS_URL: redis://127.0.0.1:6379/0
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      CSRF_TRUSTED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
+      CORS_ALLOWED_ORIGINS: http://127.0.0.1:5173,http://localhost:5173
+      SITE_URL: http://127.0.0.1:5173
+      PAYMENT_DEMO_ENABLED: "true"
+      CELERY_TASK_ALWAYS_EAGER: "true"
+      # The browser suite signs in many times from one IP; production keeps the strict defaults.
+      THROTTLE_LOGIN: 1000/min
+      THROTTLE_REGISTER: 1000/min
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip, cache-dependency-path: backend/requirements-dev.txt }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: pip install -r backend/requirements-dev.txt
+      - name: Migrate and seed demo data
+        working-directory: backend
+        run: python manage.py migrate --noinput && python manage.py seed_demo
+      - name: Start backend
+        working-directory: backend
+        run: nohup python manage.py runserver 8000 --noreload > /tmp/django.log 2>&1 &
+      - name: API purchase-to-fulfilment smoke
+        working-directory: backend
+        run: sleep 5 && python scripts/api_smoke.py
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Browser E2E
+        working-directory: frontend
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-artifacts
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+            /tmp/django.log
+
+  docker:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose file
+        run: cp .env.example .env && docker compose config -q
+      - name: Build images
+        run: docker compose build
