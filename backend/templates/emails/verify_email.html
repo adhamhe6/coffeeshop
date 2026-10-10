@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Confirm your email for {{ brand_name }}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#EFE4D0;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#EFE4D0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background-color:#F7F0E3;border:1px solid #D9CBB0;">
+          <tr>
+            <td style="background-color:#2B1D16;padding:24px 32px;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:28px;color:#F7F0E3;">
+              {{ brand_name }}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 32px 8px 32px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:32px;color:#2B1D16;">
+              Confirm your email address
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;color:#1B1410;">
+              Hi {{ first_name|default:"there" }}, thanks for creating a {{ brand_name }} account. Please confirm that this is your email address. We only send order updates, payment receipts and refund notices to confirmed addresses.
+            </td>
+          </tr>
+          <tr>
+            <td align="left" style="padding:24px 32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="background-color:#B4602B;border-radius:6px;">
+                    <a href="{{ verify_url }}" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:20px;font-weight:bold;color:#FFFFFF;text-decoration:none;">Confirm my email</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 8px 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#5A4A3F;">
+              This link expires in {{ expires_days }} days. You can still order before confirming. If the button does not work, paste this address into your browser:
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 24px 32px;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:19px;color:#B4602B;word-break:break-all;">
+              <a href="{{ verify_url }}" style="color:#B4602B;">{{ verify_url }}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 32px 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#5A4A3F;">
+              Did not create an account? You can ignore this email and nothing will be sent to you again.
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #D9CBB0;padding:20px 32px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#7A6A5E;">
+              {{ brand_name }} &middot; {{ tagline }}<br>
+              Questions? <a href="mailto:{{ support_email }}" style="color:#7A6A5E;">{{ support_email }}</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

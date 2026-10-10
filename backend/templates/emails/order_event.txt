@@ -1,0 +1,23 @@
+{% autoescape off %}{{ brand_name }}
+
+{{ copy.headline }}
+
+{{ message }}
+
+Order {{ order.number }}
+------------------------------
+{% for item in items %}{{ item.quantity }} x {{ item.name }}{% if item.options %} ({{ item.options }}){% endif %}  {{ item.line_total }}
+{% endfor %}------------------------------
+Subtotal: {{ subtotal }}
+{% if discount %}Discount: -{{ discount }}
+{% endif %}{% if is_delivery %}Delivery: {{ delivery_fee }}
+{% endif %}{% if tax %}Tax{% if tax_included %} (included){% endif %}: {{ tax }}
+{% endif %}Total: {{ total }}
+{% if refunded %}Refunded: {{ refunded }}
+{% endif %}
+Payment: {{ payment_method }} - {{ payment_status }}
+{% if is_delivery %}Delivery to: {{ address_lines|join:", " }}{% else %}Pickup at: {{ branch.name }}, {{ branch.address_line }}, {{ branch.city }}{% endif %}
+
+{% if show_payment_help %}Review your order: {% else %}Track your order: {% endif %}{{ tracking_url }}
+
+Questions? Write to {{ support_email }}.{% endautoescape %}

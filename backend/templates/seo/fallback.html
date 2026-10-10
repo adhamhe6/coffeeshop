@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{% if debug %}Frontend not built{% else %}Temporarily unavailable{% endif %}</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #F7F0E3; color: #2B1D16; font: 16px/1.5 system-ui, sans-serif; }
+    main { max-width: 36rem; padding: 2rem 1rem; }
+    h1 { font-family: Georgia, serif; font-weight: 600; margin: 0 0 .5rem; }
+    @media (prefers-color-scheme: dark) { body { background: #2B1D16; color: #F7F0E3; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>{% if debug %}Frontend not built{% else %}Temporarily unavailable{% endif %}</h1>
+    <p>{{ message }}</p>
+  </main>
+</body>
+</html>

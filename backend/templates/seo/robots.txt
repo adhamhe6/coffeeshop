@@ -1,0 +1,16 @@
+{% autoescape off %}User-agent: *
+Disallow: /admin
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /pay
+Disallow: /api
+Disallow: /django-admin
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: {{ sitemap_url }}
+{% endautoescape %}
