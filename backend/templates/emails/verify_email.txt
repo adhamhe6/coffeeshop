@@ -1,0 +1,14 @@
+{% autoescape off %}Hi {{ first_name|default:"there" }},
+
+Thanks for creating a {{ brand_name }} account. Please confirm that this is your email address:
+{{ verify_url }}
+
+We only send order updates, payment receipts and refund notices to confirmed addresses. You can still place orders before confirming. The link expires in {{ expires_days }} days.
+
+If you did not create an account, you can ignore this email.
+
+Need help? Write to {{ support_email }}.
+
+{{ brand_name }}
+{{ tagline }}
+{% endautoescape %}

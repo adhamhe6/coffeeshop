@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ", "S", "C4", "SIM"]
+ignore = ["E501", "DJ001", "S101", "B904", "SIM108", "DJ008", "DJ012"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B"]
+"apps/**/tests/**" = ["S", "B"]
+"config/settings/*" = ["F403", "F405", "S105"]
+
+"scripts/**" = ["S", "T20"]

@@ -1,0 +1,62 @@
+{% extends "emails/order_layout.html" %}
+{% block title %}{{ copy.subject }}{% endblock %}
+{% block content %}
+          <tr>
+            <td style="padding:32px 32px 8px 32px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:32px;color:#2B1D16;">
+              {{ copy.headline }}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;color:#1B1410;">
+              {{ message }}
+            </td>
+          </tr>
+          <tr>
+            <td align="left" style="padding:24px 32px 8px 32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="background-color:#B4602B;border-radius:6px;">
+                    <a href="{{ tracking_url }}" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:20px;font-weight:bold;color:#FFFFFF;text-decoration:none;">{% if show_payment_help %}Review your order{% else %}Track your order{% endif %}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 32px 4px 32px;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:20px;letter-spacing:1px;text-transform:uppercase;color:#6B5A4E;">
+              Order {{ order.number }}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#1B1410;border-top:1px solid #D9CBB0;">
+                {% for item in items %}
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E6DAC3;vertical-align:top;">
+                    {{ item.quantity }} &times; {{ item.name }}
+                    {% if item.options %}<br><span style="font-size:13px;color:#6B5A4E;">{{ item.options }}</span>{% endif %}
+                    {% if item.note %}<br><span style="font-size:13px;color:#6B5A4E;">Note: {{ item.note }}</span>{% endif %}
+                  </td>
+                  <td align="right" style="padding:10px 0;border-bottom:1px solid #E6DAC3;vertical-align:top;white-space:nowrap;">{{ item.line_total }}</td>
+                </tr>
+                {% endfor %}
+                <tr><td style="padding:8px 0 0 0;color:#6B5A4E;">Subtotal</td><td align="right" style="padding:8px 0 0 0;">{{ subtotal }}</td></tr>
+                {% if discount %}<tr><td style="padding:2px 0;color:#6B5A4E;">Discount</td><td align="right">&minus;{{ discount }}</td></tr>{% endif %}
+                {% if is_delivery %}<tr><td style="padding:2px 0;color:#6B5A4E;">Delivery</td><td align="right">{{ delivery_fee }}</td></tr>{% endif %}
+                {% if tax %}<tr><td style="padding:2px 0;color:#6B5A4E;">Tax{% if tax_included %} (included){% endif %}</td><td align="right">{{ tax }}</td></tr>{% endif %}
+                <tr><td style="padding:10px 0 0 0;font-weight:bold;border-top:1px solid #D9CBB0;">Total</td><td align="right" style="padding:10px 0 0 0;font-weight:bold;border-top:1px solid #D9CBB0;">{{ total }}</td></tr>
+                {% if refunded %}<tr><td style="padding:4px 0;color:#6B5A4E;">Refunded</td><td align="right">{{ refunded }}</td></tr>{% endif %}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 32px 0 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:22px;color:#1B1410;">
+              <strong>Payment:</strong> {{ payment_method }} &middot; {{ payment_status }}<br>
+              {% if is_delivery %}
+              <strong>Delivery to:</strong> {{ address_lines|join:", " }}<br>
+              {% else %}
+              <strong>Pickup at:</strong> {{ branch.name }}, {{ branch.address_line }}, {{ branch.city }}<br>
+              {% endif %}
+            </td>
+          </tr>
+{% endblock %}
